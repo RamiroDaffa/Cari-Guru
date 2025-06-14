@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APLIKASI PEMESANAN GURU ONLINE</title>
+  <style>
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      color: #fff;
+    }
+    header {
+      background: #5a4d9e;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      user-select: none;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+
+    main {
+      flex-grow: 1;
+      background: #f0f0f5;
+      border-radius: 12px 12px 0 0;
+      margin-top: -12px;
+      padding: 2rem 2rem 4rem;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Search & Filter */
+    .search-filter {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .search-filter input,
+    .search-filter select {
+      flex: 1 1 200px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      outline-offset: 2px;
+      transition: border-color 0.3s ease;
+    }
+    .search-filter input:focus,
+    .search-filter select:focus {
+      border-color: #764ba2;
+    }
+
+    /* Teacher List */
+    .teacher-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .teacher-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 4px 12px rgb(118 75 162 / 0.15);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .teacher-card:hover {
+      box-shadow: 0 8px 16px rgb(118 75 162 / 0.30);
+    }
+    .teacher-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .teacher-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #764ba2;
+    }
+    .teacher-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #5a4d9e;
+    }
+    .teacher-subject {
+      font-size: 0.9rem;
+      color: #999;
+      margin-top: -4px;
+    }
+    .teacher-desc {
+      font-size: 0.9rem;
+      color: #666;
+      flex-grow: 1;
+      margin-bottom: 1rem;
+    }
+    .btn-book {
+      background: #764ba2;
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn-book:hover {
+      background: #5a4d9e;
+    }
+
+    /* Teacher Detail Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .modal-header h2 {
+      color: #764ba2;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      font-weight: 700;
+      color: #764ba2;
+      user-select: none;
+    }
+
+    /* Schedule Section */
+    .schedule-section {
+      margin-top: 1rem;
+    }
+    .schedule-section h3 {
+      margin-bottom: 0.6rem;
+      color: #5a4d9e;
+    }
+    .time-slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+    .time-slot {
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      border: 1.8px solid #667eea;
+      color: #667eea;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 0.9rem;
+      min-width: 80px;
+      text-align: center;
+    }
+    .time-slot.selected {
+      background-color: #667eea;
+      color: white;
+      border-color: #5762c9;
+    }
+    .time-slot.booked {
+      background-color: #ddd;
+      border-color: #bbb;
+      color: #888;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Chat Section */
+    .chat-section {
+      margin-top: 1.5rem;
+      border-top: 1px solid #eee;
+      padding-top: 1.5rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f9f9fb;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(118,75,162,0.1);
+    }
+    .chat-messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      max-height: 220px;
+      padding: 0.8rem 1rem;
+    }
+    .chat-message {
+      margin-bottom: 0.6rem;
+      max-width: 80%;
+      padding: 0.5rem 0.8rem;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      line-height: 1.3;
+      user-select: text;
+    }
+    .chat-message.user {
+      background-color: #667eea;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+    .chat-message.teacher {
+      background-color: #dcd9fa;
+      color: #333;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+    }
+    .chat-input-area {
+      display: flex;
+      margin-top: 0.8rem;
+    }
+    .chat-input-area input {
+      flex-grow: 1;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid #ccc;
+      font-size: 1rem;
+      outline-offset: 2px;
+      transition: border-color 0.3s ease;
+    }
+    .chat-input-area input:focus {
+      border-color: #764ba2;
+    }
+    .chat-send-btn {
+      margin-left: 0.5rem;
+      background-color: #764ba2;
+      color: white;
+      border: none;
+      padding: 0 1.2rem;
+      border-radius: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .chat-send-btn:hover {
+      background-color: #5a4d9e;
+    }
+
+    /* Booking Section */
+    .booking-section {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .btn-booking-confirm {
+      background: #3f51b5;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn-booking-confirm:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    .btn-booking-confirm:hover:not(:disabled) {
+      background-color: #2c3e9e;
+    }
+
+    /* Payment Modal */
+    .payment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .payment-input {
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 2px solid #667eea;
+      outline-offset: 2px;
+      transition: border-color 0.3s ease;
+    }
+    .payment-input:focus {
+      border-color: #764ba2;
+    }
+    .btn-pay {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-weight: 700;
+      padding: 0.7rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 1.1rem;
+    }
+    .btn-pay:hover {
+      background-color: #388e3c;
+    }
+
+    /* Confirmation */
+    .confirmation-message {
+      background-color: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-top: 1rem;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .search-filter {
+        flex-direction: column;
+      }
+      .teacher-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>APLIKASI PEMESANAN GURU ONLINE</h1>
+  </header>
+  <main>
+    <section class="search-filter" aria-label="Pencarian dan Filter Guru">
+      <input type="text" id="searchName" placeholder="Cari guru berdasarkan nama..." aria-label="Cari guru berdasarkan nama" />
+      <select id="filterSubject" aria-label="Filter berdasarkan mata pelajaran">
+        <option value="">Semua Mata Pelajaran</option>
+      </select>
+    </section>
+
+    <section class="teacher-list" role="list" aria-label="Daftar Guru">
+      <!-- Teacher cards dynamically created here -->
+    </section>
+  </main>
+
+  <!-- Teacher Detail Modal -->
+  <div class="modal-overlay" id="teacherModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modal" role="document">
+      <div class="modal-header">
+        <h2 id="modalTitle">Detail Guru</h2>
+        <button class="modal-close" aria-label="Tutup" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-content">
+        <div id="teacherInfo">
+          <!-- Teacher info dynamically inserted here -->
+        </div>
+        <section class="schedule-section" aria-label="Manajemen Jadwal">
+          <h3>Jadwal Tersedia</h3>
+          <div class="time-slots" id="timeSlotsContainer">
+            <!-- Time slots buttons inserted here -->
+          </div>
+        </section>
+        <section class="chat-section" aria-label="Chat dan Konsultasi Awal">
+          <h3>Chat & Konsultasi Awal</h3>
+          <div class="chat-messages" id="chatMessages" tabindex="0" aria-live="polite" aria-relevant="additions"></div>
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" aria-label="Ketik pesan untuk guru" placeholder="Tulis pesan..." />
+            <button class="chat-send-btn" id="chatSendBtn" aria-label="Kirim pesan">Kirim</button>
+          </div>
+        </section>
+        <section class="booking-section">
+          <button class="btn-booking-confirm" id="confirmBookingBtn" disabled>Pemesanan & Pembayaran</button>
+        </section>
+        <section class="payment-section" aria-label="Pembayaran" style="display:none;">
+          <h3>Pembayaran</h3>
+          <form id="paymentForm" class="payment-form" aria-live="assertive">
+            <input type="text" id="payerName" class="payment-input" placeholder="Nama Pemesan" required aria-required="true" />
+            <input type="email" id="payerEmail" class="payment-input" placeholder="Email Pemesan" required aria-required="true" />
+            <input type="text" id="payerCard" class="payment-input" placeholder="Nomor Kartu Kredit (simulasi)" required aria-required="true" maxlength="16" pattern="\\d{16}" />
+            <button type="submit" class="btn-pay">Bayar</button>
+          </form>
+          <div class="confirmation-message" id="paymentConfirmation" style="display:none;"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // Sample teacher data
+      const teachers = [
+        {
+          id: 1,
+          name: 'Siti Aminah',
+          subject: 'Matematika',
+          description: 'Guru matematika berpengalaman 10 tahun, spesialisasi aljabar dan kalkulus.',
+          avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+          schedule: ['09:00', '10:30', '13:00', '15:00'],
+          bookedSlots: ['10:30']
+        },
+        {
+          id: 2,
+          name: 'Budi Santoso',
+          subject: 'Bahasa Inggris',
+          description: 'Guru bahasa Inggris dengan pengalaman mengajar online dan offline.',
+          avatar: 'https://randomuser.me/api/portraits/men/34.jpg',
+          schedule: ['08:00', '11:00', '14:00', '16:00'],
+          bookedSlots: []
+        },
+        {
+          id: 3,
+          name: 'Dewi Lestari',
+          subject: 'Fisika',
+          description: 'Mengajar fisika dengan cara mudah dan menyenangkan.',
+          avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+          schedule: ['10:00', '12:00', '15:00', '17:00'],
+          bookedSlots: ['15:00']
+        },
+        {
+          id: 4,
+          name: 'Agus Setiawan',
+          subject: 'Kimia',
+          description: 'Ahli kimia yang sabar dan detail dalam menjelaskan materi.',
+          avatar: 'https://randomuser.me/api/portraits/men/61.jpg',
+          schedule: ['09:00', '11:00', '13:00', '16:30'],
+          bookedSlots: []
+        }
+      ];
+
+      // Elements
+      const teacherListEl = document.querySelector('.teacher-list');
+      const searchNameInput = document.getElementById('searchName');
+      const filterSubjectSelect = document.getElementById('filterSubject');
+      const modalOverlay = document.getElementById('teacherModal');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const teacherInfoEl = document.getElementById('teacherInfo');
+      const timeSlotsContainer = document.getElementById('timeSlotsContainer');
+      const chatMessages = document.getElementById('chatMessages');
+      const chatInput = document.getElementById('chatInput');
+      const chatSendBtn = document.getElementById('chatSendBtn');
+      const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+      const paymentSection = modalOverlay.querySelector('.payment-section');
+      const paymentForm = document.getElementById('paymentForm');
+      const paymentConfirmation = document.getElementById('paymentConfirmation');
+      const payerNameInput = document.getElementById('payerName');
+      const payerEmailInput = document.getElementById('payerEmail');
+      const payerCardInput = document.getElementById('payerCard');
+
+      // State
+      let filteredTeachers = [...teachers];
+      let selectedTeacher = null;
+      let selectedTimeSlot = null;
+      let chatHistory = [];
+
+      // Initialize
+      function init() {
+        // Populate filterSubject options
+        const subjects = Array.from(new Set(teachers.map(t => t.subject)));
+        subjects.forEach(subject => {
+          const option = document.createElement('option');
+          option.value = subject;
+          option.textContent = subject;
+          filterSubjectSelect.appendChild(option);
+        });
+
+        renderTeacherList();
+        bindEvents();
+      }
+
+      // Render teacher cards in list
+      function renderTeacherList() {
+        teacherListEl.innerHTML = '';
+        if (filteredTeachers.length === 0) {
+          teacherListEl.innerHTML = '<p style="color:#666; grid-column: 1/-1; text-align:center;">Guru tidak ditemukan.</p>';
+          return;
+        }
+        filteredTeachers.forEach(teacher => {
+          const card = document.createElement('article');
+          card.classList.add('teacher-card');
+          card.setAttribute('role','listitem');
+          card.tabIndex = 0;
+          card.innerHTML = `
+            <div class="teacher-header">
+              <img src="${teacher.avatar}" alt="Foto guru ${teacher.name}" class="teacher-avatar" />
+              <div>
+                <h3 class="teacher-name">${teacher.name}</h3>
+                <p class="teacher-subject">${teacher.subject}</p>
+              </div>
+            </div>
+            <p class="teacher-desc">${teacher.description}</p>
+            <button class="btn-book" aria-label="Pesan guru ${teacher.name}">Pesan</button>
+          `;
+          // Click to open detail modal
+          card.querySelector('.btn-book').addEventListener('click', () => openTeacherModal(teacher.id));
+          // Also allow opening modal by pressing Enter on card
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              openTeacherModal(teacher.id);
+            }
+          });
+          teacherListEl.appendChild(card);
+        });
+      }
+
+      // Filter teachers by name & subject
+      function filterTeachers() {
+        const nameQuery = searchNameInput.value.trim().toLowerCase();
+        const subjectFilter = filterSubjectSelect.value;
+
+        filteredTeachers = teachers.filter(t => {
+          const matchesName = t.name.toLowerCase().includes(nameQuery);
+          const matchesSubject = subjectFilter ? t.subject === subjectFilter : true;
+          return matchesName && matchesSubject;
+        });
+        renderTeacherList();
+      }
+
+      // Open modal and show detail for selected teacher
+      function openTeacherModal(teacherId) {
+        selectedTeacher = teachers.find(t => t.id === teacherId);
+        selectedTimeSlot = null;
+        chatHistory = [];
+        confirmBookingBtn.disabled = true;
+        paymentSection.style.display = 'none';
+        paymentConfirmation.style.display = 'none';
+
+        // Render teacher info
+        teacherInfoEl.innerHTML = `
+          <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
+            <img src="${selectedTeacher.avatar}" alt="Foto guru ${selectedTeacher.name}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border: 3px solid #764ba2;" />
+            <div>
+              <h3 style="color:#5a4d9e; margin-bottom:0.2rem;">${selectedTeacher.name}</h3>
+              <p style="font-weight:600; color:#667eea; margin-top:0;">Mata Pelajaran: ${selectedTeacher.subject}</p>
+            </div>
+          </div>
+          <p style="color:#444;">${selectedTeacher.description}</p>
+        `;
+
+        renderTimeSlots();
+        chatMessages.innerHTML = '';
+        chatInput.value = '';
+        openModal();
+        setTimeout(() => chatInput.focus(), 300);
+      }
+
+      // Render schedule time slots
+      function renderTimeSlots() {
+        timeSlotsContainer.innerHTML = '';
+        selectedTeacher.schedule.forEach(slot => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'time-slot';
+          btn.textContent = slot;
+          if (selectedTeacher.bookedSlots.includes(slot)) {
+            btn.classList.add('booked');
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
+          }
+          btn.addEventListener('click', () => {
+            // Deselect previous
+            [...timeSlotsContainer.children].forEach(child => child.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedTimeSlot = slot;
+            confirmBookingBtn.disabled = false;
+          });
+          timeSlotsContainer.appendChild(btn);
+        });
+      }
+
+      // Open modal helper
+      function openModal() {
+        modalOverlay.classList.add('active');
+        modalOverlay.focus();
+        document.body.style.overflow = 'hidden';
+      }
+      // Close modal helper
+      function closeModal() {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      // Add chat message
+      function addChatMessage(text, sender = 'user') {
+        if (!text.trim()) return;
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('chat-message', sender);
+        messageEl.textContent = text;
+        chatMessages.appendChild(messageEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Save in chat history
+        chatHistory.push({ sender, text });
+      }
+
+      // Simulate teacher reply logic (simple auto replies)
+      function simulateTeacherReply(userMsg) {
+        const lowerMsg = userMsg.toLowerCase();
+        let reply = "Terima kasih atas pesan Anda! Saya akan membalas segera.";
+        if (lowerMsg.includes('halo') || lowerMsg.includes('hai')) reply = 'Halo! Ada yang bisa saya bantu?';
+        else if (lowerMsg.includes('jadwal')) reply = 'Jadwal saya tersedia seperti yang tertera di atas.';
+        else if (lowerMsg.includes('harga') || lowerMsg.includes('biaya')) reply = 'Harga per sesi adalah Rp 150.000.';
+        else if (lowerMsg.includes('terima kasih') || lowerMsg.includes('makasih')) reply = 'Sama-sama! Semoga bisa membantu.';
+        setTimeout(() => addChatMessage(reply, 'teacher'), 1000 + Math.random() * 1500);
+      }
+
+      // Bind UI events
+      function bindEvents() {
+        searchNameInput.addEventListener('input', filterTeachers);
+        filterSubjectSelect.addEventListener('change', filterTeachers);
+
+        modalCloseBtn.addEventListener('click', () => {
+          closeModal();
+        });
+        // Close modal on overlay click but not on modal content click
+        modalOverlay.addEventListener('click', (e) => {
+          if (e.target === modalOverlay) closeModal();
+        });
+        // Keyboard accessibility: close modal on ESC
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+            closeModal();
+          }
+        });
+
+        chatSendBtn.addEventListener('click', () => {
+          const message = chatInput.value.trim();
+          if (!message) return;
+          addChatMessage(message, 'user');
+          chatInput.value = '';
+          simulateTeacherReply(message);
+        });
+        chatInput.addEventListener('keypress', e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatSendBtn.click();
+          }
+        });
+
+        confirmBookingBtn.addEventListener('click', () => {
+          if (!selectedTimeSlot) return;
+          paymentSection.style.display = 'block';
+          confirmBookingBtn.style.display = 'none';
+          payerNameInput.focus();
+        });
+
+        paymentForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (!paymentForm.checkValidity()) {
+            paymentForm.reportValidity();
+            return;
+          }
+          // Simulate payment success
+          paymentConfirmation.style.display = 'block';
+          paymentConfirmation.textContent = `Terima kasih, ${payerNameInput.value}! Pemesanan Anda untuk sesi ${selectedTimeSlot} dengan guru ${selectedTeacher.name} berhasil. Kami telah mengirimkan konfirmasi ke ${payerEmailInput.value}.`;
+          paymentForm.style.display = 'none';
+        });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
+
